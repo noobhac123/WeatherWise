@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geolocation & Weather Test</title>
+    <title>Geolocation & Weather Test V2</title>
     <style>
         body { font-family: sans-serif; padding: 20px; background-color: #f4f4f4; text-align: center; }
-        h1, h2 { color: #333; margin-top: 30px;}
+        h1, h2, h3 { color: #333; margin-top: 20px;}
         button {
             padding: 12px 25px; font-size: 18px; background-color: dodgerblue;
             color: white; border: none; border-radius: 5px; cursor: pointer; margin: 20px 0;
         }
         button:disabled { background-color: lightgray; cursor: not-allowed; }
         .status-container { margin-top: 20px; padding: 15px; border: 1px solid #ddd; background-color: #fff; min-height: 50px; }
-        .success { color: green; border-color: green; }
-        .error { color: red; border-color: red; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
         pre { 
             background-color: #eee; padding: 10px; border-radius: 5px; 
             white-space: pre-wrap; word-wrap: break-word; text-align: left; 
@@ -66,29 +66,51 @@
         const apiRawResponseElement = document.getElementById('apiRawResponse');
         const apiRawPre = apiRawResponseElement.querySelector('pre');
 
-        const MY_API_KEY = 'a3af77f2f03f42cbbe335101250306'; // Your API Key
+        const MY_API_KEY = 'a3af77f2f03f42cbbe335101250306'; 
 
-        function updateStatus(message, isError = false) {
-            statusMessagesElement.innerHTML = `<p class="${isError ? 'error' : 'success'}">${message}</p>`;
+        function updateStatus(message, isError = false, isSuccess = false) {
+            let className = '';
+            if (isError) className = 'error';
+            if (isSuccess) className = 'success'; // isSuccess overrides isError if both true
+            statusMessagesElement.innerHTML = `<p class="${className}">${message}</p>`;
         }
 
         function displayWeatherData(data) {
-            if (!data || !data.location || !data.current) {
-                updateStatus("Weather data received is incomplete.", true);
+            console.log("Data received by displayWeatherData:", data); // For console debugging
+
+            if (!data) {
+                updateStatus("Weather data received is null or undefined.", true);
                 currentWeatherDisplayElement.style.display = 'none';
                 return;
             }
-            cwLocationElement.textContent = `${data.location.name}, ${data.location.region}, ${data.location.country}`;
+            if (!data.location) {
+                updateStatus("Weather data is missing 'location' object.", true);
+                currentWeatherDisplayElement.style.display = 'none';
+                return;
+            }
+            if (!data.current) {
+                updateStatus("Weather data is missing 'current' object.", true);
+                currentWeatherDisplayElement.style.display = 'none';
+                return;
+            }
+             if (!data.current.condition) {
+                updateStatus("Weather data is missing 'current.condition' object.", true);
+                currentWeatherDisplayElement.style.display = 'none';
+                return;
+            }
+
+
+            cwLocationElement.textContent = `${data.location.name || 'N/A'}, ${data.location.region || 'N/A'}, ${data.location.country || 'N/A'}`;
             
             let iconUrl = data.current.condition.icon;
-            if (iconUrl.startsWith('//')) {
+            if (iconUrl && iconUrl.startsWith('//')) {
                 iconUrl = 'https:' + iconUrl;
             }
-            cwIconElement.src = iconUrl;
-            cwIconElement.alt = data.current.condition.text;
+            cwIconElement.src = iconUrl || '';
+            cwIconElement.alt = data.current.condition.text || 'Weather condition';
 
-            cwTempElement.textContent = `${Math.round(data.current.temp_c)}°C`; // Defaulting to Celsius for simplicity
-            cwConditionElement.textContent = data.current.condition.text;
+            cwTempElement.textContent = `${Math.round(data.current.temp_c)}°C`;
+            cwConditionElement.textContent = data.current.condition.text || 'N/A';
             cwFeelsLikeElement.textContent = `Feels like: ${Math.round(data.current.feelslike_c)}°C`;
             
             currentWeatherDisplayElement.style.display = 'block';
@@ -104,48 +126,52 @@
 
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
-                    async function(position) { // Success callback for geolocation
+                    async function(position) { 
                         const lat = position.coords.latitude;
                         const lon = position.coords.longitude;
-                        updateStatus(`Location found: Lat ${lat.toFixed(2)}, Lon ${lon.toFixed(2)}. Fetching weather...`, false);
+                        updateStatus(`Location found: Lat ${lat.toFixed(2)}, Lon ${lon.toFixed(2)}. Fetching weather...`);
                         
                         const weatherApiUrl = `https://api.weatherapi.com/v1/current.json?q=${lat},${lon}&key=${MY_API_KEY}`;
-                        console.log("Fetching weather from:", weatherApiUrl);
+                        console.log("Attempting to fetch weather from:", weatherApiUrl); // For console
+                        apiRawPre.textContent = "Fetching weather data with coordinates..."; // For UI
+                        apiRawResponseElement.style.display = 'block'; // Show pre block for loading message
 
                         try {
                             const weatherResponse = await fetch(weatherApiUrl);
-                            const responseText = await weatherResponse.text(); // Get raw text first
-                            apiRawPre.textContent = responseText; // Show raw response for debugging
+                            const responseText = await weatherResponse.text();
+                            
+                            // Always display raw response for debugging
+                            apiRawPre.textContent = responseText; 
                             apiRawResponseElement.style.display = 'block';
-
 
                             if (!weatherResponse.ok) {
                                 let apiErrorMsg = `HTTP Error ${weatherResponse.status}: ${weatherResponse.statusText}`;
                                 try {
                                     const errorJson = JSON.parse(responseText);
                                     if (errorJson.error && errorJson.error.message) {
-                                        apiErrorMsg = `API Error: ${errorJson.error.message}`;
+                                        apiErrorMsg = `API Error (${errorJson.error.code}): ${errorJson.error.message}`;
                                     }
-                                } catch (e) { /* Ignore if not JSON */ }
+                                } catch (e) { /* responseText is not JSON, use original apiErrorMsg */ }
                                 throw new Error(apiErrorMsg);
                             }
                             
                             const weatherData = JSON.parse(responseText);
-                            console.log("Weather data from Geolocation:", weatherData);
+                            console.log("Weather data parsed:", weatherData); // For console
                             
-                            displayWeatherData(weatherData); // Display formatted weather data
-                            updateStatus("Weather data fetched and displayed successfully!", false);
+                            displayWeatherData(weatherData);
+                            updateStatus("Weather data displayed!", false, true); // isSuccess = true
 
                         } catch (error) {
-                            console.error("Error fetching weather with Geolocation:", error);
-                            updateStatus(`Could not fetch weather: ${error.message}`, true);
+                            console.error("Error during weather fetch or display:", error); // For console
+                            updateStatus(`Could not process weather: ${error.message}`, true);
+                            // Raw response is already shown, error message is in status
                         } finally {
                             getLocationBtn.disabled = false;
                             getLocationBtn.textContent = 'Use My Current Location';
                         }
                     },
-                    function(error) { // Error callback for geolocation
-                        let message = "Error getting location: ";
+                    function(error) { 
+                        let message = "Geolocation Error: ";
                         switch(error.code) {
                             case error.PERMISSION_DENIED: message += "User denied Geolocation."; break;
                             case error.POSITION_UNAVAILABLE: message += "Location information unavailable."; break;
@@ -153,11 +179,13 @@
                             default: message += "Unknown error."; break;
                         }
                         updateStatus(message, true);
-                        console.error("Geolocation Error Details:", error);
+                        console.error("Geolocation Error Object:", error); // For console
+                        apiRawPre.textContent = `Geolocation failed: ${message}\nError Code: ${error.code}`;
+                        apiRawResponseElement.style.display = 'block';
                         getLocationBtn.disabled = false;
                         getLocationBtn.textContent = 'Use My Current Location';
                     },
-                    { timeout: 20000, maximumAge: 0, enableHighAccuracy: false } // Increased timeout
+                    { timeout: 20000, maximumAge: 0, enableHighAccuracy: false }
                 );
             } else {
                 updateStatus("Geolocation is not supported by this browser.", true);
