@@ -3,197 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geolocation & Weather Test V2</title>
-    <style>
-        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f4; text-align: center; }
-        h1, h2, h3 { color: #333; margin-top: 20px;}
-        button {
-            padding: 12px 25px; font-size: 18px; background-color: dodgerblue;
-            color: white; border: none; border-radius: 5px; cursor: pointer; margin: 20px 0;
-        }
-        button:disabled { background-color: lightgray; cursor: not-allowed; }
-        .status-container { margin-top: 20px; padding: 15px; border: 1px solid #ddd; background-color: #fff; min-height: 50px; }
-        .success { color: green; font-weight: bold; }
-        .error { color: red; font-weight: bold; }
-        pre { 
-            background-color: #eee; padding: 10px; border-radius: 5px; 
-            white-space: pre-wrap; word-wrap: break-word; text-align: left; 
-            max-height: 250px; overflow-y: auto; margin-top: 10px;
-        }
-        .weather-card {
-            background-color: white; border: 1px solid #ccc; border-radius: 8px;
-            padding: 15px; margin: 10px auto; text-align: left; max-width: 400px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .weather-card img { vertical-align: middle; margin-right: 10px; }
-    </style>
+    <title>WeatherWise - Forecasts</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+    <header>
+        <div class="container header-container">
+            <div class="logo">
+                <i class="fas fa-cloud-sun"></i>
+                WeatherWise
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#hero-section-target">Search</a></li>
+                    <li><a href="#weather-results-target">Forecast</a></li>
+                    <li> 
+                        <button id="unitToggleBtn" class="unit-toggle-btn" title="Switch temperature unit">°C</button>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
 
-    <h1>Geolocation & WeatherAPI Test</h1>
-    <p>Click the button. If location is found, weather for that location will be fetched.</p>
+    <main>
+        <section class="hero" id="hero-section-target">
+            <div class="hero-content">
+                <h1>Weather Forecast</h1>
+                <p class="tagline">Get 10-day and hourly weather updates for any city.</p>
+                <div class="search-form-wrapper">
+                    <div class="search-form-container">
+                        <input type="text" id="locationInput" placeholder="Enter city name (e.g., London)">
+                        <button id="searchButton"><i class="fas fa-search"></i> Search</button>
+                    </div>
+                    <div id="searchInputError" class="search-input-error"></div> 
+                    <button id="geolocationBtn" class="geolocation-btn">
+                        <i class="fas fa-map-marker-alt"></i> Use My Current Location
+                    </button>
+                </div>
+            </div>
+        </section>
 
-    <button id="getLocationBtn">Use My Current Location</button>
-
-    <div id="statusMessages" class="status-container">
-        <p>Click the button to get your location.</p>
-    </div>
-
-    <div id="currentWeatherDisplay" class="weather-card" style="display:none;">
-        <h3>Current Weather:</h3>
-        <p id="cwLocation"></p>
-        <p><img id="cwIcon" src="" alt="icon" width="50" height="50"> <span id="cwTemp"></span> - <span id="cwCondition"></span></p>
-        <p id="cwFeelsLike"></p>
-    </div>
-    
-    <div id="apiRawResponse" style="display:none;">
-        <h2>Raw API Response:</h2>
-        <pre></pre>
-    </div>
-
-
-    <script>
-        const getLocationBtn = document.getElementById('getLocationBtn');
-        const statusMessagesElement = document.getElementById('statusMessages');
+        <section class="weather-results-area" id="weather-results-target">
+            <div class="container">
+                <div id="locationHeader" class="section-title"></div>
+                <article id="currentWeatherCard"></article>
+                <section id="hourlyForecastSection" class="hourly-forecast-section">
+                    <h3 class="section-subtitle" id="hourlyForecastTitle">Today's Hourly Forecast</h3>
+                    <div id="hourlyForecastContainer" class="hourly-forecast-container">
+                         <div class="loader-container hourly-loader-placeholder"><div class="loader"></div></div>
+                    </div>
+                </section>
+                <div class="section-title forecast-section-title"> 
+                    <h2 id="forecastHeader">10-Day Forecast</h2>
+                </div>
+                <div id="forecastGrid" class="forecast-grid"></div>
+            </div>
+        </section>
         
-        const currentWeatherDisplayElement = document.getElementById('currentWeatherDisplay');
-        const cwLocationElement = document.getElementById('cwLocation');
-        const cwIconElement = document.getElementById('cwIcon');
-        const cwTempElement = document.getElementById('cwTemp');
-        const cwConditionElement = document.getElementById('cwCondition');
-        const cwFeelsLikeElement = document.getElementById('cwFeelsLike');
+        <div id="statusMessageContainer" class="status-message-container container"></div>
+    </main>
 
-        const apiRawResponseElement = document.getElementById('apiRawResponse');
-        const apiRawPre = apiRawResponseElement.querySelector('pre');
-
-        const MY_API_KEY = 'a3af77f2f03f42cbbe335101250306'; 
-
-        function updateStatus(message, isError = false, isSuccess = false) {
-            let className = '';
-            if (isError) className = 'error';
-            if (isSuccess) className = 'success'; // isSuccess overrides isError if both true
-            statusMessagesElement.innerHTML = `<p class="${className}">${message}</p>`;
-        }
-
-        function displayWeatherData(data) {
-            console.log("Data received by displayWeatherData:", data); // For console debugging
-
-            if (!data) {
-                updateStatus("Weather data received is null or undefined.", true);
-                currentWeatherDisplayElement.style.display = 'none';
-                return;
-            }
-            if (!data.location) {
-                updateStatus("Weather data is missing 'location' object.", true);
-                currentWeatherDisplayElement.style.display = 'none';
-                return;
-            }
-            if (!data.current) {
-                updateStatus("Weather data is missing 'current' object.", true);
-                currentWeatherDisplayElement.style.display = 'none';
-                return;
-            }
-             if (!data.current.condition) {
-                updateStatus("Weather data is missing 'current.condition' object.", true);
-                currentWeatherDisplayElement.style.display = 'none';
-                return;
-            }
-
-
-            cwLocationElement.textContent = `${data.location.name || 'N/A'}, ${data.location.region || 'N/A'}, ${data.location.country || 'N/A'}`;
-            
-            let iconUrl = data.current.condition.icon;
-            if (iconUrl && iconUrl.startsWith('//')) {
-                iconUrl = 'https:' + iconUrl;
-            }
-            cwIconElement.src = iconUrl || '';
-            cwIconElement.alt = data.current.condition.text || 'Weather condition';
-
-            cwTempElement.textContent = `${Math.round(data.current.temp_c)}°C`;
-            cwConditionElement.textContent = data.current.condition.text || 'N/A';
-            cwFeelsLikeElement.textContent = `Feels like: ${Math.round(data.current.feelslike_c)}°C`;
-            
-            currentWeatherDisplayElement.style.display = 'block';
-        }
-
-
-        getLocationBtn.addEventListener('click', function() {
-            updateStatus("Requesting location permission...");
-            currentWeatherDisplayElement.style.display = 'none';
-            apiRawResponseElement.style.display = 'none';
-            getLocationBtn.disabled = true;
-            getLocationBtn.textContent = 'Fetching Location...';
-
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    async function(position) { 
-                        const lat = position.coords.latitude;
-                        const lon = position.coords.longitude;
-                        updateStatus(`Location found: Lat ${lat.toFixed(2)}, Lon ${lon.toFixed(2)}. Fetching weather...`);
-                        
-                        const weatherApiUrl = `https://api.weatherapi.com/v1/current.json?q=${lat},${lon}&key=${MY_API_KEY}`;
-                        console.log("Attempting to fetch weather from:", weatherApiUrl); // For console
-                        apiRawPre.textContent = "Fetching weather data with coordinates..."; // For UI
-                        apiRawResponseElement.style.display = 'block'; // Show pre block for loading message
-
-                        try {
-                            const weatherResponse = await fetch(weatherApiUrl);
-                            const responseText = await weatherResponse.text();
-                            
-                            // Always display raw response for debugging
-                            apiRawPre.textContent = responseText; 
-                            apiRawResponseElement.style.display = 'block';
-
-                            if (!weatherResponse.ok) {
-                                let apiErrorMsg = `HTTP Error ${weatherResponse.status}: ${weatherResponse.statusText}`;
-                                try {
-                                    const errorJson = JSON.parse(responseText);
-                                    if (errorJson.error && errorJson.error.message) {
-                                        apiErrorMsg = `API Error (${errorJson.error.code}): ${errorJson.error.message}`;
-                                    }
-                                } catch (e) { /* responseText is not JSON, use original apiErrorMsg */ }
-                                throw new Error(apiErrorMsg);
-                            }
-                            
-                            const weatherData = JSON.parse(responseText);
-                            console.log("Weather data parsed:", weatherData); // For console
-                            
-                            displayWeatherData(weatherData);
-                            updateStatus("Weather data displayed!", false, true); // isSuccess = true
-
-                        } catch (error) {
-                            console.error("Error during weather fetch or display:", error); // For console
-                            updateStatus(`Could not process weather: ${error.message}`, true);
-                            // Raw response is already shown, error message is in status
-                        } finally {
-                            getLocationBtn.disabled = false;
-                            getLocationBtn.textContent = 'Use My Current Location';
-                        }
-                    },
-                    function(error) { 
-                        let message = "Geolocation Error: ";
-                        switch(error.code) {
-                            case error.PERMISSION_DENIED: message += "User denied Geolocation."; break;
-                            case error.POSITION_UNAVAILABLE: message += "Location information unavailable."; break;
-                            case error.TIMEOUT: message += "Location request timed out."; break;
-                            default: message += "Unknown error."; break;
-                        }
-                        updateStatus(message, true);
-                        console.error("Geolocation Error Object:", error); // For console
-                        apiRawPre.textContent = `Geolocation failed: ${message}\nError Code: ${error.code}`;
-                        apiRawResponseElement.style.display = 'block';
-                        getLocationBtn.disabled = false;
-                        getLocationBtn.textContent = 'Use My Current Location';
-                    },
-                    { timeout: 20000, maximumAge: 0, enableHighAccuracy: false }
-                );
-            } else {
-                updateStatus("Geolocation is not supported by this browser.", true);
-                getLocationBtn.disabled = false;
-                getLocationBtn.textContent = 'Use My Current Location';
-            }
-        });
-    </script>
-
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>WeatherWise</h3>
+                    <p>Reliable weather forecasts powered by WeatherAPI.com.</p>
+                     <div class="social-links">
+                        <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" title="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#hero-section-target">Search</a></li>
+                        <li><a href="#weather-results-target">Forecast Data</a></li>
+                        <li><a href="https://www.weatherapi.com/" target="_blank" rel="noopener">WeatherAPI.com</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="#">Help</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© <span id="currentYear"></span> WeatherWise. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    <script src="js/main.js"></script>
 </body>
 </html>
