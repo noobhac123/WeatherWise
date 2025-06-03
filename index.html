@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeatherWise - Yeovil Forecast & More</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css"> {/* Updated Path */}
+</head>
+<body>
+    <header>
+        <div class="container header-container">
+            <div class="logo"><i class="fas fa-cloud-sun"></i> WeatherWise</div>
+            <nav>
+                <ul>
+                    <li><a href="#hero-section-target" data-scroll-target="#hero-section-target">Search</a></li>
+                    <li><a href="#weather-results-target" data-scroll-target="#weather-results-target">Current Forecast</a></li>
+                    <li><button id="unitToggleBtn" class="unit-toggle-btn" title="Switch temperature unit">°C</button></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero" id="hero-section-target"> 
+            <div class="hero-content">
+                <h1>Weather Forecast</h1>
+                <p class="tagline">Check the 10-day forecast for Yeovil below, or search for any other city.</p>
+                <div class="search-form-wrapper">
+                    <div class="search-form-container">
+                        <input type="text" id="locationInput" placeholder="Enter city name (e.g., London, New York)" autocomplete="off">
+                        <button id="searchButton"><i class="fas fa-search"></i> Search</button>
+                    </div>
+                    <div id="autocompleteSuggestions" class="autocomplete-suggestions-container"></div>
+                    <div id="searchInputError" class="search-input-error"></div> 
+                    <button id="geolocationBtn" class="geolocation-btn">
+                        <i class="fas fa-map-marker-alt"></i><span class="btn-text">Use My Location</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section class="weather-results-area" id="weather-results-target">
+            <div class="container">
+                <div id="weatherAlertsContainer" class="weather-alerts-container" style="display: none;"></div>
+                <div id="locationHeader" class="section-title"></div>
+                <article id="currentWeatherCard"></article>
+                <section id="hourlyForecastSection" class="hourly-forecast-section">
+                    <h3 class="section-subtitle" id="hourlyForecastTitle">Today's Hourly Forecast</h3>
+                    <div id="hourlyForecastContainer" class="hourly-forecast-container">
+                        {/* Skeletons/Loaders will be injected by JS */}
+                    </div>
+                </section>
+                <div class="section-title forecast-section-title">
+                    <h2 id="forecastHeader">10-Day Forecast</h2>
+                </div>
+                <div id="forecastGrid" class="forecast-grid">
+                     {/* Skeletons/Loaders will be injected by JS */}
+                </div>
+            </div>
+        </section>
+        <div id="statusMessageContainer" class="status-message-container"></div>
+    </main>
+
+    <footer>
+        <div class="container footer-bottom">
+            <p>© <span id="currentYear"></span> WeatherWise. Powered by <a href="https://www.weatherapi.com/" target="_blank" rel="noopener">WeatherAPI.com</a>.</p>
+        </div>
+    </footer>
+    
+    <div id="hourlyDetailsModal" class="modal-overlay">
+        <div class="modal-content">
+            <button id="closeHourlyModalBtn" class="modal-close-btn">×</button>
+            <h3 id="modalHourTime" class="modal-title"></h3>
+            <div id="modalHourlyDetailsGrid" class="modal-details-grid">
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js" defer></script> {/* Updated Path */}
+</body>
+</html>
