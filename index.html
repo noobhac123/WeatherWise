@@ -3,122 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WeatherWise - Yeovil Forecast & More</title>
-    <!-- Link Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Link External CSS -->
-    <link rel="stylesheet" href="css/styles.css">
+    <title>WeatherAPI Key Test on Vercel</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f4; }
+        h1 { color: #333; }
+        #status { margin-top: 20px; padding: 15px; border: 1px solid #ddd; background-color: #fff; }
+        .success { color: green; border-color: green; }
+        .error { color: red; border-color: red; }
+        pre { background-color: #eee; padding: 10px; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word; }
+    </style>
 </head>
 <body>
-    <!-- Header -->
-    <header>
-        <div class="container header-container">
-            <div class="logo">
-                <i class="fas fa-cloud-sun"></i>
-                WeatherWise
-            </div>
-            <nav>
-                <ul>
-                    <li><a href="#hero-section-target">Search</a></li>
-                    <li><a href="#weather-results-target">Current Forecast</a></li>
-                    <li> 
-                        <button id="unitToggleBtn" class="unit-toggle-btn" title="Switch temperature unit">
-                            °C
-                        </button>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-    </header>
 
-    <main>
-        <!-- Hero Section -->
-        <section class="hero" id="hero-section-target">
-            <div class="hero-content">
-                <h1>Weather Forecast</h1>
-                <p class="tagline">Check the 10-day forecast for Yeovil below, or search for any other city.</p>
-                <div class="search-form-wrapper">
-                    <div class="search-form-container">
-                        <input type="text" id="locationInput" placeholder="Enter city name (e.g., London, New York)">
-                        <button id="searchButton"><i class="fas fa-search"></i> Search</button>
-                    </div>
-                    <div id="searchInputError" class="search-input-error"></div> 
-                    <button id="geolocationBtn" class="geolocation-btn">
-                        <i class="fas fa-map-marker-alt"></i> Use My Current Location
-                    </button>
-                </div>
-            </div>
-        </section>
+    <h1>Testing WeatherAPI Fetch on Vercel</h1>
+    <p>This page will attempt to fetch weather data for Yeovil using a hardcoded API key and display status messages.</p>
 
-        <!-- Weather Results Area -->
-        <section class="weather-results-area" id="weather-results-target">
-            <div class="container">
-                <div id="locationHeader" class="section-title">
-                    <!-- JS will inject location -->
-                </div>
+    <div id="status">
+        <p>Attempting to fetch weather data...</p>
+    </div>
 
-                <article id="currentWeatherCard">
-                    <!-- Current weather data will be injected here by JS -->
-                </article>
+    <div id="apiResponse" style="display:none;">
+        <h2>API Response:</h2>
+        <pre></pre>
+    </div>
+
+    <script>
+        // Ensure this API key is EXACTLY correct
+        const MY_API_KEY = 'a3af77f2f03f42cbbe335101250306'; // Aapki API Key
+        const LOCATION = 'Yeovil';
+        const DAYS = '3'; // Keep it simple for testing
+
+        const statusElement = document.getElementById('status');
+        const apiResponseElement = document.getElementById('apiResponse');
+        const apiResponsePre = apiResponseElement.querySelector('pre');
+
+        async function testWeatherApi() {
+            const apiUrl = `https://api.weatherapi.com/v1/forecast.json?q=${LOCATION}&days=${DAYS}&key=${MY_API_KEY}`;
+            
+            statusElement.innerHTML = `<p>Fetching from: ${apiUrl}</p><p>Please wait...</p>`;
+            console.log("Attempting to fetch from:", apiUrl);
+
+            try {
+                const response = await fetch(apiUrl);
                 
-                <section id="hourlyForecastSection" class="hourly-forecast-section">
-                    <h3 class="section-subtitle">Today's Hourly Forecast</h3>
-                    <div id="hourlyForecastContainer" class="hourly-forecast-container">
-                        <!-- Hourly cards will be injected here by JS -->
-                        <div class="loader-container hourly-loader-placeholder">
-                            <div class="loader"></div>
-                        </div>
-                    </div>
-                </section>
+                statusElement.innerHTML += `<p>Fetch attempt made. Response status: ${response.status}</p>`;
+                console.log("Response Status:", response.status);
+                console.log("Response OK:", response.ok);
+
+                const responseText = await response.text(); // Get raw text first for debugging
+                console.log("Raw Response Text:", responseText);
+
+
+                if (!response.ok) {
+                    // Try to parse as JSON if it's an API error, otherwise show text
+                    let errorData;
+                    try {
+                        errorData = JSON.parse(responseText);
+                        console.error('API Error Data (parsed):', errorData);
+                        throw new Error(`API Error ${response.status}: ${errorData.error ? errorData.error.message : response.statusText}. Raw: ${responseText}`);
+                    } catch (e) {
+                        console.error('Could not parse error response as JSON. Raw response shown above.');
+                        throw new Error(`HTTP Error ${response.status}: ${response.statusText}. Raw response: ${responseText}`);
+                    }
+                }
                 
-                <div class="section-title forecast-section-title"> 
-                    <h2 id="forecastHeader">10-Day Forecast</h2>
-                </div>
-                <div id="forecastGrid" class="forecast-grid">
-                    <!-- Forecast cards will be injected here by JS -->
-                </div>
-            </div>
-        </section>
-        
-        <div id="statusMessageContainer" class="status-message-container container">
-            <!-- Status messages (for critical errors) will be injected here by JS -->
-        </div>
-    </main>
+                // If response.ok is true, try to parse as JSON
+                const data = JSON.parse(responseText);
+                console.log('Successfully fetched and parsed data:', data);
 
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-column">
-                    <h3>WeatherWise</h3>
-                    <p>Providing reliable weather forecasts to help you plan your day, powered by WeatherAPI.com.</p>
-                     <div class="social-links">
-                        <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" title="Twitter"><i class="fab fa-twitter"></i></a>
-                        <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
-                    </div>
-                </div>
-                <div class="footer-column">
-                    <h3>Quick Links</h3>
-                    <ul>
-                        <li><a href="#hero-section-target">Search Weather</a></li>
-                        <li><a href="https://www.weatherapi.com/" target="_blank" rel="noopener">WeatherAPI.com</a></li>
-                    </ul>
-                </div>
-                <div class="footer-column">
-                    <h3>Support</h3>
-                    <ul>
-                        <li><a href="#">Help (Placeholder)</a></li>
-                        <li><a href="#">Contact (Placeholder)</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>© <span id="currentYear"></span> WeatherWise. All rights reserved. Data by <a href="https://www.weatherapi.com/" title="Free Weather API" target="_blank" rel="noopener noreferrer">WeatherAPI.com</a>.</p>
-            </div>
-        </div>
-    </footer>
+                statusElement.innerHTML = '<p class="success">SUCCESS: Weather data fetched and parsed successfully!</p>';
+                statusElement.innerHTML += `<p>Location: ${data.location.name}, ${data.location.country}</p>`;
+                statusElement.innerHTML += `<p>Current Temp: ${data.current.temp_c}°C</p>`;
+                
+                apiResponsePre.textContent = JSON.stringify(data, null, 2);
+                apiResponseElement.style.display = 'block';
 
-    <!-- Link External JavaScript (at the end of body for better performance) -->
-    <script src="js/main.js"></script>
+            } catch (error) {
+                console.error('Fetch Error:', error);
+                statusElement.innerHTML = `<p class="error">ERROR: Could not fetch weather data.</p>`;
+                statusElement.innerHTML += `<p>Details: ${error.message}</p>`;
+                statusElement.innerHTML += `<p>Check the browser console (F12) for more details, especially the Network tab.</p>`;
+                
+                // Display raw response text if available in error message and not already shown
+                if (error.message && error.message.includes("Raw response:") && apiResponsePre) {
+                     apiResponsePre.textContent = "Error occurred. See console for raw response if captured during error.";
+                     apiResponseElement.style.display = 'block';
+                } else if (error.message && apiResponsePre) {
+                    apiResponsePre.textContent = error.message;
+                    apiResponseElement.style.display = 'block';
+                }
+
+            }
+        }
+
+        // Run the test on page load
+        testWeatherApi();
+
+    </script>
+
 </body>
 </html>
