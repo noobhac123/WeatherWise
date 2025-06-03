@@ -3,161 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geolocation Test on Vercel</title>
+    <title>Geolocation & Weather Test</title>
     <style>
         body { font-family: sans-serif; padding: 20px; background-color: #f4f4f4; text-align: center; }
-        h1 { color: #333; }
+        h1, h2 { color: #333; margin-top: 30px;}
         button {
-            padding: 12px 25px;
-            font-size: 18px;
-            background-color: dodgerblue;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 20px 0;
+            padding: 12px 25px; font-size: 18px; background-color: dodgerblue;
+            color: white; border: none; border-radius: 5px; cursor: pointer; margin: 20px 0;
         }
-        button:disabled {
-            background-color: lightgray;
-            cursor: not-allowed;
-        }
-        #locationStatus {
-            margin-top: 20px;
-            padding: 15px;
-            border: 1px solid #ddd;
-            background-color: #fff;
-            min-height: 50px;
-        }
+        button:disabled { background-color: lightgray; cursor: not-allowed; }
+        .status-container { margin-top: 20px; padding: 15px; border: 1px solid #ddd; background-color: #fff; min-height: 50px; }
         .success { color: green; border-color: green; }
         .error { color: red; border-color: red; }
-        pre {
-            background-color: #eee; padding: 10px;
-            border-radius: 5px; white-space: pre-wrap;
-            word-wrap: break-word; text-align: left;
-            max-height: 200px; overflow-y: auto;
+        pre { 
+            background-color: #eee; padding: 10px; border-radius: 5px; 
+            white-space: pre-wrap; word-wrap: break-word; text-align: left; 
+            max-height: 250px; overflow-y: auto; margin-top: 10px;
         }
+        .weather-card {
+            background-color: white; border: 1px solid #ccc; border-radius: 8px;
+            padding: 15px; margin: 10px auto; text-align: left; max-width: 400px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .weather-card img { vertical-align: middle; margin-right: 10px; }
     </style>
 </head>
 <body>
 
-    <h1>Testing Geolocation API on Vercel</h1>
-    <p>Click the button below. Your browser should ask for location permission.</p>
+    <h1>Geolocation & WeatherAPI Test</h1>
+    <p>Click the button. If location is found, weather for that location will be fetched.</p>
 
-    <button id="getLocationBtn">Get My Location</button>
+    <button id="getLocationBtn">Use My Current Location</button>
 
-    <div id="locationStatus">
+    <div id="statusMessages" class="status-container">
         <p>Click the button to get your location.</p>
     </div>
 
-    <div id="coordsDisplay" style="display:none;">
-        <h2>Coordinates:</h2>
-        <pre></pre>
+    <div id="currentWeatherDisplay" class="weather-card" style="display:none;">
+        <h3>Current Weather:</h3>
+        <p id="cwLocation"></p>
+        <p><img id="cwIcon" src="" alt="icon" width="50" height="50"> <span id="cwTemp"></span> - <span id="cwCondition"></span></p>
+        <p id="cwFeelsLike"></p>
     </div>
     
-    <div id="weatherApiResponse" style="display:none;">
-        <h2>Weather API Response (Using Geolocation):</h2>
+    <div id="apiRawResponse" style="display:none;">
+        <h2>Raw API Response:</h2>
         <pre></pre>
     </div>
+
 
     <script>
         const getLocationBtn = document.getElementById('getLocationBtn');
-        const locationStatusElement = document.getElementById('locationStatus');
-        const coordsDisplayElement = document.getElementById('coordsDisplay');
-        const coordsPre = coordsDisplayElement.querySelector('pre');
-        const weatherApiResponseElement = document.getElementById('weatherApiResponse');
-        const weatherApiPre = weatherApiResponseElement.querySelector('pre');
+        const statusMessagesElement = document.getElementById('statusMessages');
+        
+        const currentWeatherDisplayElement = document.getElementById('currentWeatherDisplay');
+        const cwLocationElement = document.getElementById('cwLocation');
+        const cwIconElement = document.getElementById('cwIcon');
+        const cwTempElement = document.getElementById('cwTemp');
+        const cwConditionElement = document.getElementById('cwCondition');
+        const cwFeelsLikeElement = document.getElementById('cwFeelsLike');
 
-        // Use the same API key from your app for a consistent test
-        const MY_API_KEY = 'a3af77f2f03f42cbbe335101250306'; 
+        const apiRawResponseElement = document.getElementById('apiRawResponse');
+        const apiRawPre = apiRawResponseElement.querySelector('pre');
 
-        if (getLocationBtn) {
-            getLocationBtn.addEventListener('click', function() {
-                locationStatusElement.innerHTML = "<p>Requesting location permission...</p>";
-                coordsDisplayElement.style.display = 'none';
-                weatherApiResponseElement.style.display = 'none';
-                getLocationBtn.disabled = true;
-                getLocationBtn.textContent = 'Fetching...';
+        const MY_API_KEY = 'a3af77f2f03f42cbbe335101250306'; // Your API Key
 
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        async function(position) { // Made success callback async
-                            const lat = position.coords.latitude;
-                            const lon = position.coords.longitude;
-
-                            locationStatusElement.innerHTML = '<p class="success">Location permission granted! Fetching weather...</p>';
-                            coordsPre.textContent = `Latitude: ${lat}\nLongitude: ${lon}\nAccuracy: ${position.coords.accuracy} meters`;
-                            coordsDisplayElement.style.display = 'block';
-                            console.log("Coordinates obtained:", lat, lon);
-
-                            // Now try to fetch weather with these coordinates
-                            const weatherApiUrl = `https://api.weatherapi.com/v1/current.json?q=${lat},${lon}&key=${MY_API_KEY}`;
-                            console.log("Fetching weather from:", weatherApiUrl);
-                            weatherApiPre.textContent = "Fetching weather data with coordinates...";
-                            weatherApiResponseElement.style.display = 'block';
-
-                            try {
-                                const weatherResponse = await fetch(weatherApiUrl);
-                                const weatherText = await weatherResponse.text(); // Get raw text
-
-                                if (!weatherResponse.ok) {
-                                    let weatherErrorData;
-                                    try {
-                                        weatherErrorData = JSON.parse(weatherText);
-                                        throw new Error(`Weather API Error ${weatherResponse.status}: ${weatherErrorData.error ? weatherErrorData.error.message : weatherResponse.statusText}`);
-                                    } catch (e) {
-                                        throw new Error(`Weather HTTP Error ${weatherResponse.status}: ${weatherResponse.statusText}. Raw: ${weatherText}`);
-                                    }
-                                }
-                                const weatherData = JSON.parse(weatherText);
-                                console.log("Weather data from Geolocation:", weatherData);
-                                weatherApiPre.textContent = JSON.stringify(weatherData, null, 2);
-                                locationStatusElement.innerHTML += '<p class="success">Weather data fetched successfully using your location!</p>';
-
-                            } catch (error) {
-                                console.error("Error fetching weather with Geolocation:", error);
-                                weatherApiPre.textContent = `Error fetching weather: ${error.message}`;
-                                locationStatusElement.innerHTML += `<p class="error">Could not fetch weather data: ${error.message}</p>`;
-                            } finally {
-                                getLocationBtn.disabled = false;
-                                getLocationBtn.textContent = 'Get My Location';
-                            }
-                        },
-                        function(error) {
-                            let message = "Error getting location: ";
-                            switch(error.code) {
-                                case error.PERMISSION_DENIED:
-                                    message += "User denied the request for Geolocation.";
-                                    break;
-                                case error.POSITION_UNAVAILABLE:
-                                    message += "Location information is unavailable.";
-                                    break;
-                                case error.TIMEOUT:
-                                    message += "The request to get user location timed out.";
-                                    break;
-                                case error.UNKNOWN_ERROR:
-                                    message += "An unknown error occurred.";
-                                    break;
-                            }
-                            locationStatusElement.innerHTML = `<p class="error">${message}</p>`;
-                            console.error("Geolocation Error Details:", error);
-                            getLocationBtn.disabled = false;
-                            getLocationBtn.textContent = 'Get My Location';
-                        },
-                        { // Options
-                            enableHighAccuracy: false, // true can be slower but more accurate
-                            timeout: 10000,        // 10 seconds
-                            maximumAge: 0          // Force fresh location
-                        }
-                    );
-                } else {
-                    locationStatusElement.innerHTML = "<p class='error'>Geolocation is not supported by this browser.</p>";
-                    getLocationBtn.disabled = false;
-                    getLocationBtn.textContent = 'Get My Location';
-                }
-            });
-        } else {
-            locationStatusElement.innerHTML = "<p class='error'>Button not found!</p>";
+        function updateStatus(message, isError = false) {
+            statusMessagesElement.innerHTML = `<p class="${isError ? 'error' : 'success'}">${message}</p>`;
         }
+
+        function displayWeatherData(data) {
+            if (!data || !data.location || !data.current) {
+                updateStatus("Weather data received is incomplete.", true);
+                currentWeatherDisplayElement.style.display = 'none';
+                return;
+            }
+            cwLocationElement.textContent = `${data.location.name}, ${data.location.region}, ${data.location.country}`;
+            
+            let iconUrl = data.current.condition.icon;
+            if (iconUrl.startsWith('//')) {
+                iconUrl = 'https:' + iconUrl;
+            }
+            cwIconElement.src = iconUrl;
+            cwIconElement.alt = data.current.condition.text;
+
+            cwTempElement.textContent = `${Math.round(data.current.temp_c)}°C`; // Defaulting to Celsius for simplicity
+            cwConditionElement.textContent = data.current.condition.text;
+            cwFeelsLikeElement.textContent = `Feels like: ${Math.round(data.current.feelslike_c)}°C`;
+            
+            currentWeatherDisplayElement.style.display = 'block';
+        }
+
+
+        getLocationBtn.addEventListener('click', function() {
+            updateStatus("Requesting location permission...");
+            currentWeatherDisplayElement.style.display = 'none';
+            apiRawResponseElement.style.display = 'none';
+            getLocationBtn.disabled = true;
+            getLocationBtn.textContent = 'Fetching Location...';
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    async function(position) { // Success callback for geolocation
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        updateStatus(`Location found: Lat ${lat.toFixed(2)}, Lon ${lon.toFixed(2)}. Fetching weather...`, false);
+                        
+                        const weatherApiUrl = `https://api.weatherapi.com/v1/current.json?q=${lat},${lon}&key=${MY_API_KEY}`;
+                        console.log("Fetching weather from:", weatherApiUrl);
+
+                        try {
+                            const weatherResponse = await fetch(weatherApiUrl);
+                            const responseText = await weatherResponse.text(); // Get raw text first
+                            apiRawPre.textContent = responseText; // Show raw response for debugging
+                            apiRawResponseElement.style.display = 'block';
+
+
+                            if (!weatherResponse.ok) {
+                                let apiErrorMsg = `HTTP Error ${weatherResponse.status}: ${weatherResponse.statusText}`;
+                                try {
+                                    const errorJson = JSON.parse(responseText);
+                                    if (errorJson.error && errorJson.error.message) {
+                                        apiErrorMsg = `API Error: ${errorJson.error.message}`;
+                                    }
+                                } catch (e) { /* Ignore if not JSON */ }
+                                throw new Error(apiErrorMsg);
+                            }
+                            
+                            const weatherData = JSON.parse(responseText);
+                            console.log("Weather data from Geolocation:", weatherData);
+                            
+                            displayWeatherData(weatherData); // Display formatted weather data
+                            updateStatus("Weather data fetched and displayed successfully!", false);
+
+                        } catch (error) {
+                            console.error("Error fetching weather with Geolocation:", error);
+                            updateStatus(`Could not fetch weather: ${error.message}`, true);
+                        } finally {
+                            getLocationBtn.disabled = false;
+                            getLocationBtn.textContent = 'Use My Current Location';
+                        }
+                    },
+                    function(error) { // Error callback for geolocation
+                        let message = "Error getting location: ";
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED: message += "User denied Geolocation."; break;
+                            case error.POSITION_UNAVAILABLE: message += "Location information unavailable."; break;
+                            case error.TIMEOUT: message += "Location request timed out."; break;
+                            default: message += "Unknown error."; break;
+                        }
+                        updateStatus(message, true);
+                        console.error("Geolocation Error Details:", error);
+                        getLocationBtn.disabled = false;
+                        getLocationBtn.textContent = 'Use My Current Location';
+                    },
+                    { timeout: 20000, maximumAge: 0, enableHighAccuracy: false } // Increased timeout
+                );
+            } else {
+                updateStatus("Geolocation is not supported by this browser.", true);
+                getLocationBtn.disabled = false;
+                getLocationBtn.textContent = 'Use My Current Location';
+            }
+        });
     </script>
 
 </body>
