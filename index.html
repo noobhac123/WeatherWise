@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeatherWise - Live Forecast & More</title>
+    <meta name="description" content="Live, real-time weather: current conditions, hourly, and daily forecasts. Search any city with WeatherWise.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <svg class="svg-icon-defs">
+        <defs>
+            <symbol id="logo-weatherwise-professional" viewBox="0 0 100 100"><path d="M77.5,36.3c-0.6-15.1-12.5-27.2-27.8-27.5C34.9,8.4,22.8,19.8,22,34.5c-0.5-0.1-1-0.2-1.5-0.2 C10.9,34.3,3,42.4,3,51.8c0,9.6,7.7,17.4,17.2,17.4h42.7c8.9,0,16.1-7.2,16.1-16.1C79,45.2,79,40.4,77.5,36.3z" fill="var(--accent-primary)"/><circle cx="37.5" cy="30.5" r="15" fill="var(--accent-secondary)"/><path d="M74.1,38.2c-0.5-2.5-1.4-4.8-2.7-6.8c-0.6-1-1.4-1.9-2.2-2.7c-0.3,0-0.5,0-0.8,0c-2,0-3.8,0.5-5.5,1.3 c-2.5-7.2-9.1-12.4-16.9-12.4c-9.6,0-17.8,5.7-21.9,13.9c-1.3-0.3-2.6-0.5-4.1-0.5c-8,0-14.5,6.6-14.5,14.5s6.5,14.5,14.5,14.5 h37.8c6.2,0,11.2-5,11.2-11.2C79,44.3,77,40.8,74.1,38.2z" fill="white" opacity="0.15"/></symbol>
+            <symbol id="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="currentColor"/><line x1="12" y1="1" x2="12" y2="3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="21" x2="12" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="12" x2="3" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="21" y1="12" x2="23" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+            <symbol id="icon-cloud" viewBox="0 0 24 24"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" fill="currentColor"/></symbol>
+            <symbol id="icon-cloud-sun" viewBox="0 0 24 24"><path d="M12 2.5A5.5 5.5 0 0 0 6.5 8H6a4 4 0 0 0-4 4 4 4 0 0 0 4 4h10a4 4 0 0 0 4-4 4 4 0 0 0-4-4h-.5A5.5 5.5 0 0 0 12 2.5zM12 4a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7z" fill="currentColor" opacity="0.5"/><path d="M18 15H6a2 2 0 0 0-2 2v0a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v0a2 2 0 0 0-2-2z" fill="currentColor"/><circle cx="12" cy="7.5" r="3.5" fill="#FFD700"/></symbol>
+            <symbol id="icon-rain" viewBox="0 0 24 24"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" fill="currentColor" opacity="0.6"/><line x1="12" y1="14" x2="12" y2="18" stroke="#4FC3F7" stroke-width="2" stroke-linecap="round" /><line x1="9" y1="15" x2="9" y2="19" stroke="#4FC3F7" stroke-width="2" stroke-linecap="round" /><line x1="15" y1="15" x2="15" y2="19" stroke="#4FC3F7" stroke-width="2" stroke-linecap="round" /></symbol>
+            <symbol id="icon-showers" viewBox="0 0 24 24"><use xlink:href="#icon-cloud-sun" opacity="0.7"/><line x1="10" y1="15" x2="10" y2="19" stroke="#81D4FA" stroke-width="1.5" stroke-linecap="round" /><line x1="14" y1="16" x2="14" y2="20" stroke="#81D4FA" stroke-width="1.5" stroke-linecap="round" /></symbol>
+            <symbol id="icon-thunderstorm" viewBox="0 0 24 24"><use xlink:href="#icon-cloud" fill="#546E7A"/><polygon points="11 13 13 13 12 17 14 15 10 15 11 11" fill="#FFEB3B"/><line x1="8" y1="16" x2="8" y2="20" stroke="#4FC3F7" stroke-width="1.5" stroke-linecap="round" /><line x1="16" y1="16" x2="16" y2="20" stroke="#4FC3F7" stroke-width="1.5" stroke-linecap="round" /></symbol>
+            <symbol id="icon-snow" viewBox="0 0 24 24"><use xlink:href="#icon-cloud" fill="#B0BEC5"/><circle cx="10" cy="15" r="1" fill="white"/> <circle cx="14" cy="15" r="1" fill="white"/><circle cx="12" cy="17" r="1" fill="white"/> <circle cx="9" cy="18" r="1" fill="white"/><circle cx="15" cy="18" r="1" fill="white"/> <circle cx="12" cy="19" r="1" fill="white"/></symbol>
+            <symbol id="icon-search" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 100 13.5 6.75 6.75 0 000-13.5zM2.25 10.5a8.25 8.25 0 1114.59 5.28l4.69 4.69a.75.75 0 11-1.06 1.06l-4.69-4.69A8.25 8.25 0 012.25 10.5z" clip-rule="evenodd" /></symbol>
+            <symbol id="icon-location" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" /></symbol>
+            <symbol id="icon-default" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" fill="currentColor"/></symbol>
+            <symbol id="icon-moon" viewBox="0 0 24 24"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.5 5.5 0 0 1-7.04-7.04A8.9 8.9 0 0 0 12 3Z"/></symbol>
+            <symbol id="icon-sun-fill" viewBox="0 0 24 24"><path fill="currentColor" d="M12 17a5 5 0 1 0 0-10a5 5 0 0 0 0 10Zm0-12a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0V6a1 1 0 0 1 1-1ZM4.929 6.343a1 1 0 0 1 1.414 0L7.757 7.757a1 1 0 1 1-1.414 1.414L4.929 7.757a1 1 0 0 1 0-1.414ZM1 12a1 1 0 0 1 1-1h2a1 1 0 1 1 0 2H2a1 1 0 0 1-1-1Zm3.929 4.243a1 1 0 0 1 0 1.414L6.343 19.07a1 1 0 0 1-1.414-1.414l-1.414-1.414a1 1 0 0 1 1.414-1.414ZM12 19a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0v-2a1 1 0 0 1 1-1Zm5.657-2.243a1 1 0 0 1 1.414 0l1.414 1.414a1 1 0 0 1-1.414 1.414l-1.414-1.414a1 1 0 0 1 0-1.414ZM20 12a1 1 0 0 1 1-1h2a1 1 0 1 1 0 2h-2a1 1 0 0 1-1-1Zm-2.243-5.657a1 1 0 0 1 0-1.414l1.414-1.414a1 1 0 1 1 1.414 1.414L17.657 7.757a1 1 0 0 1-1.414 0Z"/></symbol>
+        </defs>
+    </svg>
+
+    <header class="site-header">
+        <div class="container header-content">
+            <a href="#" onclick="event.preventDefault(); window.location.reload();" class="logo-area" aria-label="WeatherWise homepage, reload current page">
+                <svg class="logo-icon"><use xlink:href="#logo-weatherwise-professional"></use></svg>
+                <span class="site-title">WeatherWise</span>
+            </a>
+            <div class="header-actions-wrapper">
+                <div class="search-group">
+                    <input type="text" id="location-search-input" placeholder="Search city or postcode..." autocomplete="off">
+                    <button class="icon-button" id="search-clear-button" aria-label="Clear search input" style="display: none;">
+                        <svg viewBox="0 0 24 24" style="width:18px; height:18px;"><path fill="currentColor" d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41z"/></svg>
+                    </button>
+                    <button class="icon-button" id="search-button" aria-label="Search location">
+                        <svg><use xlink:href="#icon-search"></use></svg>
+                    </button>
+                    <div id="autocomplete-suggestions" class="autocomplete-suggestions-container"></div>
+                </div>
+                <div class="utility-controls-group">
+                    <button class="icon-button" id="geolocation-button" aria-label="Use current location">
+                        <svg><use xlink:href="#icon-location"></use></svg>
+                    </button>
+                    <button class="unit-toggle-button" id="unit-toggle-button" aria-label="Toggle temperature unit Celsius/Fahrenheit">
+                        °C
+                    </button>
+                    <button class="icon-button theme-toggle-button" id="theme-toggle-button" aria-label="Toggle light/dark theme">
+                        <svg class="theme-icon-moon"><use xlink:href="#icon-moon"></use></svg>
+                        <svg class="theme-icon-sun" style="display: none;"><use xlink:href="#icon-sun-fill"></use></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section id="current-weather-section" class="current-weather-section" aria-labelledby="location-name-display">
+            <div class="container">
+                <div class="location-time">
+                    <h1 id="location-name-display" class="location">Loading Location...</h1>
+                    <p id="current-datetime-display" class="time">Fetching date & time...</p>
+                    <p id="last-updated-display" class="last-updated-time">Updating...</p>
+                </div>
+                <div class="weather-primary">
+                    <div id="main-weather-icon-display" class="main-icon" aria-label="Current weather condition icon"></div>
+                    <div id="current-temperature-display" class="temperature">--°</div>
+                    <p id="current-condition-display" class="condition">Loading condition...</p>
+                </div>
+                <div class="weather-details-grid" aria-label="Additional weather details">
+                    <div class="detail-box"><span class="label">Feels Like</span><span id="feels-like-display" class="value">--°</span></div>
+                    <div class="detail-box"><span class="label">Wind</span><span id="wind-display" class="value">-- ---</span></div>
+                    <div class="detail-box"><span class="label">Humidity</span><span id="humidity-display" class="value">--%</span></div>
+                    <div class="detail-box"><span class="label">Rain</span><span id="rain-today-display" class="value">--%</span></div>
+                    <div class="detail-box"><span class="label">Pressure</span><span id="pressure-display" class="value">----mb</span></div>
+                    <div class="detail-box"><span class="label">UV Index</span><span id="uv-index-display" class="value">--</span></div>
+                    <div class="detail-box">
+                        <span class="label">Air Quality</span>
+                        <span id="aqi-display" class="value">--</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="forecast-section" aria-labelledby="hourly-forecast-title">
+            <div class="container">
+                <h2 id="hourly-forecast-title" class="section-title">Hourly Forecast</h2>
+                <div class="hourly-forecast-scroller">
+                    <div id="hourly-forecast-list-display" class="hourly-forecast-list" role="list" aria-label="12-hour weather forecast">
+                        <p style="padding:10px;">Loading hourly forecast...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="forecast-section" aria-labelledby="daily-forecast-title">
+            <div class="container">
+                <h2 id="daily-forecast-title" class="section-title">Daily Forecast</h2>
+                <div id="daily-forecast-grid-display" class="daily-forecast-grid" role="list" aria-label="Multi-day weather forecast">
+                     <p style="padding:10px; grid-column: 1 / -1;">Loading daily forecast...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <p>© <span id="current-year"></span> WeatherWise. All rights reserved.</p>
+        <p>Weather data powered by <a href="https://www.weatherapi.com/" title="Free Weather API" target="_blank" rel="noopener">WeatherAPI.com</a>.</p>
+    </footer>
+
+    <div id="loading-overlay" class="loading-overlay" role="alert" aria-live="assertive"><div><div class="spinner"></div><p>Fetching weather data...</p></div></div>
+    <div id="error-message-box" class="error-message" role="alert" aria-live="assertive"><p id="error-text">An error occurred.</p></div>
+
+    <script src="script.js" defer></script>
+</body>
+</html>
+                        elements.dailyGrid.appendChild(notice);
+                    }
+                }
+            }
+
+            requestAnimationFrame(() => { elementsToFade.forEach(el => { if (el) el.classList.remove('is-updating'); }); });
+            if (shouldScroll) { setTimeout(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, 150); }
+        }
+
+        function debounce(func, delay) {
+            return function(...args) {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => { func.apply(this, args); }, delay);
+            };
+        }
+
+        async function fetchAutocompleteSuggestions(query) {
+            if (query.length < 3) {
+                elements.autocompleteSuggestionsContainer.innerHTML = '';
+                elements.autocompleteSuggestionsContainer.style.display = 'none';
+                return;
+            }
+            console.log(`[AUTOCOMPLETE] Fetching suggestions for: ${query}`);
+            const url = `https://api.weatherapi.com/v1/search.json?key=${API_KEY}&q=${encodeURIComponent(query)}`;
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    console.error(`[AUTOCOMPLETE] API Error: ${response.status}`);
+                    elements.autocompleteSuggestionsContainer.innerHTML = '';
+                    elements.autocompleteSuggestionsContainer.style.display = 'none';
+                    return;
+                }
+                const suggestions = await response.json();
+                displayAutocompleteSuggestions(suggestions);
+            } catch (error) {
+                console.error('[AUTOCOMPLETE] Fetch error:', error);
+                elements.autocompleteSuggestionsContainer.innerHTML = '';
+                elements.autocompleteSuggestionsContainer.style.display = 'none';
+            }
+        }
+
+        function displayAutocompleteSuggestions(suggestions) {
+            elements.autocompleteSuggestionsContainer.innerHTML = '';
+            if (suggestions && suggestions.length > 0) {
+                suggestions.forEach(suggestion => {
+                    const item = document.createElement('div');
+                    item.classList.add('suggestion-item');
+                    let displayText = suggestion.name;
+                    if (suggestion.region && suggestion.region !== suggestion.name) displayText += `, ${suggestion.region}`;
+                    if (suggestion.country && suggestion.country !== suggestion.name) displayText += `<span class="suggestion-region"> (${suggestion.country})</span>`;
+                    item.innerHTML = displayText;
+                    item.addEventListener('click', () => {
+                        elements.searchInput.value = `${suggestion.name}, ${suggestion.country}`;
+                        elements.autocompleteSuggestionsContainer.innerHTML = '';
+                        elements.autocompleteSuggestionsContainer.style.display = 'none';
+                        elements.searchClearButton.style.display = 'flex';
+                        fetchWeatherData(suggestion.url);
+                    });
+                    elements.autocompleteSuggestionsContainer.appendChild(item);
+                });
+                elements.autocompleteSuggestionsContainer.style.display = 'block';
+            } else {
+                elements.autocompleteSuggestionsContainer.style.display = 'none';
+            }
+        }
+
+        const debouncedFetchAutocomplete = debounce(fetchAutocompleteSuggestions, 300);
+
+        // --- EVENT LISTENERS ---
+
+        elements.searchInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            if (query) {
+                debouncedFetchAutocomplete(query);
+                elements.searchClearButton.style.display = 'flex';
+            } else {
+                elements.autocompleteSuggestionsContainer.innerHTML = '';
+                elements.autocompleteSuggestionsContainer.style.display = 'none';
+                elements.searchClearButton.style.display = 'none';
+            }
+        });
+
+        elements.searchClearButton.addEventListener('click', function() {
+            elements.searchInput.value = '';
+            this.style.display = 'none';
+            elements.autocompleteSuggestionsContainer.innerHTML = '';
+            elements.autocompleteSuggestionsContainer.style.display = 'none';
+            elements.searchInput.focus();
+        });
+
+        document.addEventListener('click', function(event) {
+            if (elements.searchGroup && !elements.searchGroup.contains(event.target) ) {
+                elements.autocompleteSuggestionsContainer.style.display = 'none';
+            }
+        });
+
+        elements.themeToggleButton.addEventListener('click', () => {
+            document.body.classList.contains('light-mode') ? setTheme('dark') : setTheme('light');
+        });
+
+        elements.unitToggleButton.addEventListener('click', () => {
+            currentTemperatureUnit === 'c' ? setTemperatureUnit('f') : setTemperatureUnit('c');
+        });
+
+        elements.searchButton.addEventListener('click', () => {
+            elements.autocompleteSuggestionsContainer.style.display = 'none';
+            const query = elements.searchInput.value.trim();
+            if (query) {
+                fetchWeatherData(query);
+            } else {
+                showError("Please enter a location to search.", 3000);
+                elements.searchInput.focus();
+            }
+            if (elements.searchInput.value.trim() === '') {
+                elements.searchClearButton.style.display = 'none';
+            }
+        });
+
+        elements.searchInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                elements.autocompleteSuggestionsContainer.style.display = 'none';
+                elements.searchButton.click();
+            }
+        });
+
+        elements.geolocationButton.addEventListener('click', () => {
+            elements.autocompleteSuggestionsContainer.style.display = 'none';
+            if (navigator.geolocation) {
+                showLoading("Finding your location...");
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        fetchWeatherData(`${position.coords.latitude},${position.coords.longitude}`);
+                    },
+                    (error) => {
+                        let msg = 'Could not get your location. Ensure location services are enabled/granted, or search manually.';
+                        if (error.code === error.PERMISSION_DENIED) {
+                            msg = 'Location permission denied. Please enable it in your browser settings and try again.';
+                        } else if (error.code === error.POSITION_UNAVAILABLE) {
+                            msg = 'Location information is currently unavailable.';
+                        } else if (error.code === error.TIMEOUT) {
+                            msg = 'Request to get your location timed out.';
+                        }
+                        showError(msg);
+                    },
+                    { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+                );
+            } else {
+                showError('Geolocation is not supported by your browser.');
+            }
+        });
+
+        function initializeApp() {
+            const savedTheme = localStorage.getItem('weatherwise-theme');
+            const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (savedTheme) {
+                setTheme(savedTheme);
+            } else if (prefersDarkScheme) {
+                setTheme('dark');
+            } else {
+                setTheme('light');
+            }
+
+            const savedUnit = localStorage.getItem('weatherwise-temp-unit');
+            setTemperatureUnit(savedUnit || 'c');
+
+            document.getElementById('current-year').textContent = new Date().getFullYear();
+            elements.lastUpdatedDisplay.textContent = 'Fetching latest update...';
+            
+            if (elements.searchInput.value.trim() !== '') {
+                elements.searchClearButton.style.display = 'flex';
+            } else {
+                elements.searchClearButton.style.display = 'none';
+            }
+
+            fetchWeatherData(lastSearchedQuery);
+        }
+
+        initializeApp();
+
+    </script>
+</body>
+</html>
+
+        function displayAutocompleteSuggestions(suggestions) {
+            elements.autocompleteSuggestionsContainer.innerHTML = '';
+            if (suggestions && suggestions.length > 0) {
+                suggestions.forEach(suggestion => {
+                    const item = document.createElement('div');
+                    item.classList.add('suggestion-item');
+                    let displayText = suggestion.name;
+                    if (suggestion.region && suggestion.region !== suggestion.name) displayText += `, ${suggestion.region}`;
+                    if (suggestion.country && suggestion.country !== suggestion.name) displayText += `<span class="suggestion-region"> (${suggestion.country})</span>`;
+                    item.innerHTML = displayText;
+                    item.addEventListener('click', () => {
+                        elements.searchInput.value = `${suggestion.name}, ${suggestion.country}`;
+                        elements.autocompleteSuggestionsContainer.innerHTML = '';
+                        elements.autocompleteSuggestionsContainer.style.display = 'none';
+                        elements.searchClearButton.style.display = 'flex';
+                        fetchWeatherData(suggestion.url);
+                    });
+                    elements.autocompleteSuggestionsContainer.appendChild(item);
+                });
+                elements.autocompleteSuggestionsContainer.style.display = 'block';
+            } else {
+                elements.autocompleteSuggestionsContainer.style.display = 'none';
+            }
+        }
+        const debouncedFetchAutocomplete = debounce(fetchAutocompleteSuggestions, 300);
+
+        elements.searchInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            if (query) {
+                debouncedFetchAutocomplete(query);
+                elements.searchClearButton.style.display = 'flex';
+            } else {
+                elements.autocompleteSuggestionsContainer.innerHTML = '';
+                elements.autocompleteSuggestionsContainer.style.display = 'none';
+                elements.searchClearButton.style.display = 'none';
+            }
+        });
+        elements.searchClearButton.addEventListener('click', function() {
+            elements.searchInput.value = '';
+            this.style.display = 'none';
+            elements.autocompleteSuggestionsContainer.innerHTML = '';
+            elements.autocompleteSuggestionsContainer.style.display = 'none';
+            elements.searchInput.focus();
+        });
+        document.addEventListener('click', function(event) {
+            if (elements.searchGroup && !elements.searchGroup.contains(event.target) ) {
+                elements.autocompleteSuggestionsContainer.style.display = 'none';
+            }
+        });
+
+
+        elements.themeToggleButton.addEventListener('click', () => { document.body.classList.contains('light-mode') ? setTheme('dark') : setTheme('light'); });
+        elements.unitToggleButton.addEventListener('click', () => { currentTemperatureUnit === 'c' ? setTemperatureUnit('f') : setTemperatureUnit('c'); });
+        elements.searchButton.addEventListener('click', () => {
+            elements.autocompleteSuggestionsContainer.style.display = 'none';
+            const query = elements.searchInput.value.trim();
+            if (query) { fetchWeatherData(query); }
+            else { showError("Please enter a location to search.", 1000); elements.searchInput.focus(); }
+            if (elements.searchInput.value.trim() === '') { elements.searchClearButton.style.display = 'none';}
+        });
+        elements.searchInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') {
+            elements.autocompleteSuggestionsContainer.style.display = 'none';
+            elements.searchButton.click();
+        } });
+        elements.geolocationButton.addEventListener('click', () => {
+            elements.autocompleteSuggestionsContainer.style.display = 'none';
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => { fetchWeatherData(`${position.coords.latitude},${position.coords.longitude}`); },
+                    (error) => {
+                        let msg='Could not get your location. Ensure location services are enabled/granted, or search manually.';
+                        if(error.code===error.PERMISSION_DENIED)msg='Location permission denied. Please enable it and try again.';
+                        else if(error.code===error.POSITION_UNAVAILABLE)msg='Location information is currently unavailable.';
+                        else if(error.code===error.TIMEOUT)msg='Request to get your location timed out.';
+                        showError(msg,1e3);
+                    },
+                    { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+                );
+            } else { showError('Geolocation is not supported by your browser.', 1000); }
+        });
+
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('weatherwise-theme');
+            const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (savedTheme) setTheme(savedTheme);
+            else if (prefersDarkScheme) setTheme('dark');
+            else setTheme('light');
+        }
+        function initializeTemperatureUnit() {
+            const savedUnit = localStorage.getItem('weatherwise-temp-unit');
+            setTemperatureUnit(savedUnit || 'c');
+        }
+
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        elements.lastUpdatedDisplay.textContent = 'Fetching latest update...';
+        if (elements.searchInput.value.trim() !== '') { elements.searchClearButton.style.display = 'flex'; }
+        else { elements.searchClearButton.style.display = 'none'; }
+
+        initializeTheme();
+        initializeTemperatureUnit();
+        fetchWeatherData(lastSearchedQuery);
+
+    </script>
+</body>
+</html>
